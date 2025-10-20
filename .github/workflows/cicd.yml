@@ -108,6 +108,8 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
           SEOUL_SUBWAY_API_KEY: ${{ secrets.SEOUL_SUBWAY_API_KEY }}
+          DOCKERHUB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/wishfast
+          IMAGE_TAG: sha-${{ github.sha }}
 
           script: |
             set -Eeuo pipefail
@@ -191,6 +193,9 @@ jobs:
             DB_USER=${RDS_USER}
             DB_PASSWORD=${RDS_PASSWORD}
             DB_PORT=3306
+
+            DOCKERHUB_IMAGE=${DOCKERHUB_IMAGE}
+            IMAGE_TAG=${IMAGE_TAG}
             EOF
 
             # -------- /.env.prod (환경변수 파일) --------
