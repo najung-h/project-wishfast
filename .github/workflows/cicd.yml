@@ -94,6 +94,21 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_DEBUG: ${{ secrets.DJANGO_DEBUG }}
+          DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
+          RDS_HOST: ${{ secrets.RDS_HOST }}
+          RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
+          RDS_USER: ${{ secrets.RDS_USER }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
+          SEOUL_SUBWAY_API_KEY: ${{ secrets.SEOUL_SUBWAY_API_KEY }}
+
           script: |
             set -Eeuo pipefail
 
@@ -103,34 +118,6 @@ jobs:
             mkdir -p "$APP_DIR/nginx/conf.d"
             cd "$APP_DIR"
             # ----------/deploy:prep---------
-
-            # -----------deploy:env---------
-            # .env 파일 재생성, -f 명령어를 통해 파일 존재여부와 관계없이 삭제를 (안전하게 == 실패 안하게)보장하려고 함.
-            rm -f .env
-            # 아래 명령어를 통해 스크립트 내에서 환경 변수와 같은 여러 줄의 데이터를 파일(.env)로 만들 수 있음 
-            cat > .env << EOF
-            DJANGO_SECRET_KEY='${{ secrets.DJANGO_SECRET_KEY }}'
-            DJANGO_DEBUG='${{ secrets.DJANGO_DEBUG }}'
-            DJANGO_ALLOWED_HOSTS='${{ secrets.DJANGO_ALLOWED_HOSTS }}'
-            DB_HOST='${{ secrets.RDS_HOST }}'
-            MYSQL_DATABASE='${{ secrets.RDS_DB_NAME }}'
-            MYSQL_USER='${{ secrets.RDS_USER }}'
-            MYSQL_PASSWORD='${{ secrets.RDS_PASSWORD }}'
-            DOCKERHUB_IMAGE='${{ secrets.DOCKERHUB_USERNAME }}/wishfast'
-            IMAGE_TAG='sha-${{ github.sha }}'
-            GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}'
-            GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}'
-            SITE_DOMAIN='${{ secrets.SITE_DOMAIN }}'
-            SEOUL_SUBWAY_API_KEY='${{ secrets.SEOUL_SUBWAY_API_KEY }}'
-            EOF
-            
-            # .env 파일의 변수들을 현재 셸 환경으로 export
-            # 이래야 nginx.conf 생성 시 ${SITE_DOMAIN} 변수를 사용할 수 있음
-            set -a
-            . ./.env
-            set +a
-
-            # ----------/deploy:env---------
 
             # -----------deploy:docker-ensure---------
             # Docker/Compose 보장
@@ -179,21 +166,45 @@ jobs:
             if [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
               echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             fi
-
+          
             # 네트워크 생성 - 야멜 파일 안에 정의된 컨테이너 들이 appnet에 연결되어, 서로 다른 컨테이너 들이 통신할 수 있게 만들어줍니다. 반대로 appnet 네트워크에 속하지 않은 다른 컨테이너들과는 격리되어 보안은 강화됩니다.
             sudo docker network create appnet || true
             # ----------/deploy:docker-ensure---------
+
+            # -------- .env.prod (환경변수 파일) --------
+            cat > .env.prod <<EOF
+            DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+            DJANGO_DEBUG=${DJANGO_DEBUG}
+            DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+            SITE_DOMAIN=${SITE_DOMAIN}
+
+            # Google OAuth
+            GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+
+            # Seoul Subway API
+            SEOUL_SUBWAY_API_KEY=${SEOUL_SUBWAY_API_KEY}
+
+            # RDS (MySQL)
+            DB_HOST=${RDS_HOST}
+            DB_NAME=${RDS_DB_NAME}
+            DB_USER=${RDS_USER}
+            DB_PASSWORD=${RDS_PASSWORD}
+            DB_PORT=3306
+            EOF
+
+            # -------- /.env.prod (환경변수 파일) --------
 
             # -----------deploy:nginx-conf---------
             # nginx conf (HTTP→HTTPS 리다이렉트 + 프록시) 
             # 목적: 80 포트는 443으로 리다이렉트 강제, 443은 web:8000으로 프록시
             # 즉, 80(hhtp), 443(https)로 사용자의 요청이 오면, nginx컨테이너로 전달하고, 이후 들어온 요청을 실제 웹앱이 있는 컨테이너로 전달한다.
             # Nginx 가 읽을 서버 설정 파일을 nginx/conf.d/default.conf 경로에 생성
-            cat > nginx/conf.d/default.conf << EOF
+            cat > nginx/conf.d/default.conf << 'EOF'
             server {
               listen 80;
               server_name subway-info-easy.site;
-              return 301 https://\$host\$request_uri;
+              return 301 https://$host$request_uri;
             }
 
             server {
@@ -212,7 +223,7 @@ jobs:
 
               location /static/ {
                 alias /wishfast/staticfiles/;
-                try_files \$uri \$uri/ =404;
+                try_files $uri $uri/ =404;
               }
 
               location / {
@@ -234,7 +245,7 @@ jobs:
                 image: "${DOCKERHUB_IMAGE}:${IMAGE_TAG}"
                 container_name: wishfast_web
                 restart: always
-                env_file: .env
+                env_file: .env.prod
                 environment:
                   SECRET_KEY: ${DJANGO_SECRET_KEY}
                   DJANGO_DEBUG: ${DJANGO_DEBUG}
