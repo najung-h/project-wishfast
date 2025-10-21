@@ -14,6 +14,25 @@ concurrency:
   group: wishfast-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+  DJANGO_DEBUG: ${{ secrets.DJANGO_DEBUG }}
+  DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
+  RDS_HOST: ${{ secrets.RDS_HOST }}
+  RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
+  RDS_USER: ${{ secrets.RDS_USER }}
+  RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
+  SEOUL_SUBWAY_API_KEY: ${{ secrets.SEOUL_SUBWAY_API_KEY }}
+  DOCKERHUB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/wishfast
+  IMAGE_TAG: sha-${{ github.sha }}
+  EC2_HOST: ${{ secrets.EC2_HOST }}
+  EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+  EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
 
 jobs:
   build-and-push:
@@ -63,8 +82,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
       #-------------/Build:registry-login-------------
           
         
@@ -76,9 +95,9 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/wishfast:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/wishfast:sha-${{ github.sha }}
-          
+            ${DOCKERHUB_USERNAME}/wishfast:latest
+            ${DOCKERHUB_USERNAME}/wishfast:sha-${{ github.sha }}
+
       #-------------/Build:build_n_push-------------
   #-------------/Build-------------
 
@@ -91,27 +110,12 @@ jobs:
     steps:
       - name: Deploy to EC2 with Docker Compose (nginx + web)
         uses: appleboy/ssh-action@master
-        env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          DJANGO_DEBUG: ${{ secrets.DJANGO_DEBUG }}
-          DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-          RDS_HOST: ${{ secrets.RDS_HOST }}
-          RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
-          RDS_USER: ${{ secrets.RDS_USER }}
-          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
-          SEOUL_SUBWAY_API_KEY: ${{ secrets.SEOUL_SUBWAY_API_KEY }}
-          DOCKERHUB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/wishfast
-          IMAGE_TAG: sha-${{ github.sha }}
-          
+
+
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: $EC2_HOST
+          username: $EC2_USERNAME
+          key: $EC2_SSH_KEY
 
 
           script: |
@@ -168,8 +172,8 @@ jobs:
             fi
 
             # Hub 로그인
-            if [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
-              echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            if [ -n "$DOCKERHUB_TOKEN" ]; then
+              echo "$DOCKERHUB_TOKEN" | sudo docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             fi
           
             # 네트워크 생성 - 야멜 파일 안에 정의된 컨테이너 들이 appnet에 연결되어, 서로 다른 컨테이너 들이 통신할 수 있게 만들어줍니다. 반대로 appnet 네트워크에 속하지 않은 다른 컨테이너들과는 격리되어 보안은 강화됩니다.
@@ -177,29 +181,28 @@ jobs:
             # ----------/deploy:docker-ensure---------
 
             # -------- .env.prod (환경변수 파일) --------
-            # MYSQL_ 과 
             cat > .env.prod <<EOF
-            DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-            DJANGO_DEBUG=${DJANGO_DEBUG}
-            DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
-            SITE_DOMAIN=${SITE_DOMAIN}
+            DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY
+            DJANGO_DEBUG=$DJANGO_DEBUG
+            DJANGO_ALLOWED_HOSTS=$DJANGO_ALLOWED_HOSTS
+            SITE_DOMAIN=$SITE_DOMAIN
 
             # Google OAuth
-            GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-            GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+            GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
 
             # Seoul Subway API
-            SEOUL_SUBWAY_API_KEY=${SEOUL_SUBWAY_API_KEY}
+            SEOUL_SUBWAY_API_KEY=$SEOUL_SUBWAY_API_KEY
 
             # RDS (MySQL)
-            DB_HOST=${RDS_HOST}
-            DB_NAME=${RDS_DB_NAME}
-            DB_USER=${RDS_USER}
-            DB_PASSWORD=${RDS_PASSWORD}
+            DB_HOST=$RDS_HOST
+            DB_NAME=$RDS_DB_NAME
+            DB_USER=$RDS_USER
+            DB_PASSWORD=$RDS_PASSWORD
             DB_PORT=3306
 
-            DOCKERHUB_IMAGE=${DOCKERHUB_IMAGE}
-            IMAGE_TAG=${IMAGE_TAG}
+            DOCKERHUB_IMAGE=$DOCKERHUB_IMAGE
+            IMAGE_TAG=$IMAGE_TAG
             EOF
 
             # -------- /.env.prod (환경변수 파일) --------
@@ -209,7 +212,7 @@ jobs:
             # 목적: 80 포트는 443으로 리다이렉트 강제, 443은 web:8000으로 프록시
             # 즉, 80(hhtp), 443(https)로 사용자의 요청이 오면, nginx컨테이너로 전달하고, 이후 들어온 요청을 실제 웹앱이 있는 컨테이너로 전달한다.
             # Nginx 가 읽을 서버 설정 파일을 nginx/conf.d/default.conf 경로에 생성
-            cat > nginx/conf.d/default.conf << 'EOF'
+            cat > nginx/conf.d/default.conf << EOF
             server {
               listen 80;
               server_name subway-info-easy.site;
@@ -248,7 +251,7 @@ jobs:
             # ----------/deploy:nginx-conf---------
 
             # -----------deploy:compose-file---------
-            cat > docker-compose.prod.yml << 'EOF'
+            cat > docker-compose.prod.yml << EOF
             services:
               web:
                 image: "${DOCKERHUB_IMAGE}:${IMAGE_TAG}"
@@ -256,17 +259,17 @@ jobs:
                 restart: always
                 env_file: .env.prod
                 environment:
-                  SECRET_KEY: ${DJANGO_SECRET_KEY}
-                  DJANGO_DEBUG: ${DJANGO_DEBUG}
-                  DB_HOST: ${DB_HOST}
+                  SECRET_KEY: $DJANGO_SECRET_KEY
+                  DJANGO_DEBUG: $DJANGO_DEBUG
+                  DB_HOST: $DB_HOST
                   DB_PORT: "3306"
-                  MYSQL_DATABASE: ${MYSQL_DATABASE}
-                  MYSQL_USER: ${MYSQL_USER}
-                  MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+                  MYSQL_DATABASE: $MYSQL_DATABASE
+                  MYSQL_USER: $MYSQL_USER
+                  MYSQL_PASSWORD: $MYSQL_PASSWORD
                   DJANGO_SETTINGS_MODULE: config.settings.prod
-                  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-                  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-                  SITE_DOMAIN: ${SITE_DOMAIN}
+                  GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
+                  GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
+                  SITE_DOMAIN: $SITE_DOMAIN
                 volumes:
                   - ./staticfiles:/wishfast/staticfiles
                   - ./logs:/wishfast/logs
@@ -365,13 +368,13 @@ jobs:
       - name: Cleanup old Docker images on EC2 (retain last 3)
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: $EC2_HOST
+          username: $EC2_USERNAME
+          key: $EC2_SSH_KEY
           script: |
             set -Eeuo pipefail
             echo "[cleanup] 오래된 Docker 이미지를 정리합니다."
-            REPO="${{ secrets.DOCKERHUB_USERNAME }}/wishfast"
+            REPO="${DOCKERHUB_USERNAME}/wishfast"
             KEEP_N=3
 
 
