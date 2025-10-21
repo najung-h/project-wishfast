@@ -27,27 +27,11 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="insecure")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DJANGO_DEBUG", default=False)
+DEBUG = True  # 개발 환경에서는 True, 운영 환경에서는 prod.py에서 False로 재정의됨
 
 # DJANGO_ALLOWED_HOSTS 환경 변수가 없을 경우, DEBUG=True 일 때는 Django가 알아서 'localhost', '127.0.0.1'을 추가해줌.
 # 운영 환경(DEBUG=False)에서는 반드시 명시적으로 호스트를 설정해야 하므로, 기본값을 빈 리스트로 설정함.
-allowed_hosts_str = env("DJANGO_ALLOWED_HOSTS", default="")
-ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_str.split(",") if h.strip()]
-
-
-# 신뢰된 오리진 목록 
-CSRF_TRUSTED_ORIGINS = [
-    "https://subway-info-easy.site",
-    "https://www.subway-info-easy.site",   # www 쓰면 함께
-]
-
-# 세션/CSRF 쿠키를 HTTPS 연결에서만 전송 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-
-
-# 실제 클라이언트가 HTTPS로 전송했음을 장고에게 알려주는 힌트 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # 프록시가 이 헤더를 넣어줄 때
+ALLOWED_HOSTS = []
 
 
 # Application definition
