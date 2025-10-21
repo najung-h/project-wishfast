@@ -281,6 +281,8 @@ jobs:
                 image: "${DOCKERHUB_IMAGE}:${IMAGE_TAG}"
                 container_name: wishfast_web
                 restart: always
+                environment:
+                  DJANGO_SETTINGS_MODULE: config.settings.prod
                 volumes:
                   - ./staticfiles:/wishfast/staticfiles
                   - ./logs:/wishfast/logs
