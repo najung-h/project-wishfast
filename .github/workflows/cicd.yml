@@ -381,7 +381,7 @@ jobs:
         with:
           script: |
             set -Eeuo pipefail
-            export DOCKERHUB_IMAGE='${{ env.DOCKERHUB_USERNAME }}/wishfast'
+            export DOCKERHUB_IMAGE='${env.DOCKERHUB_USERNAME}/wishfast'
             echo "[cleanup] 오래된 Docker 이미지를 정리합니다."
             REPO="${DOCKERHUB_IMAGE}"
             KEEP_N=3
