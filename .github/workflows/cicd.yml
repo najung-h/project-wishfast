@@ -87,25 +87,27 @@ jobs:
     needs: build-and-push
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    env:
-      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DJANGO_DEBUG: ${{ secrets.DJANGO_DEBUG }}
-      DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-      RDS_HOST: ${{ secrets.RDS_HOST }}
-      RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
-      RDS_USER: ${{ secrets.RDS_USER }}
-      RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
-      SEOUL_SUBWAY_API_KEY: ${{ secrets.SEOUL_SUBWAY_API_KEY }}
-      DOCKERHUB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/wishfast
-      IMAGE_TAG: sha-${{ github.sha }}
+    
     steps:
       - name: Deploy to EC2 with Docker Compose (nginx + web)
         uses: appleboy/ssh-action@master
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_DEBUG: ${{ secrets.DJANGO_DEBUG }}
+          DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
+          RDS_HOST: ${{ secrets.RDS_HOST }}
+          RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
+          RDS_USER: ${{ secrets.RDS_USER }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
+          SEOUL_SUBWAY_API_KEY: ${{ secrets.SEOUL_SUBWAY_API_KEY }}
+          DOCKERHUB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/wishfast
+          IMAGE_TAG: sha-${{ github.sha }}
+          
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
