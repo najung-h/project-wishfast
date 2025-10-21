@@ -205,27 +205,27 @@ jobs:
 
             # -------- .env.prod (환경변수 파일) --------
             cat > .env.prod <<EOF
-            DJANGO_SECRET_KEY=${{ env.DJANGO_SECRET_KEY }}
-            DJANGO_DEBUG=${{ env.DJANGO_DEBUG }}
-            DJANGO_ALLOWED_HOSTS=${{ env.DJANGO_ALLOWED_HOSTS }}
-            SITE_DOMAIN=${{ env.SITE_DOMAIN }}
+            DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY
+            DJANGO_DEBUG=$DJANGO_DEBUG
+            DJANGO_ALLOWED_HOSTS=$DJANGO_ALLOWED_HOSTS
+            SITE_DOMAIN=$SITE_DOMAIN
 
             # Google OAuth
-            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
+            GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
 
             # Seoul Subway API
-            SEOUL_SUBWAY_API_KEY=${{ env.SEOUL_SUBWAY_API_KEY }}
+            SEOUL_SUBWAY_API_KEY=$SEOUL_SUBWAY_API_KEY
 
             # RDS (MySQL)
-            DB_HOST=${{ env.RDS_HOST }}
-            DB_NAME=${{ env.RDS_DB_NAME }}
-            DB_USER=${{ env.RDS_USER }}
-            DB_PASSWORD=${{ env.RDS_PASSWORD }}
+            DB_HOST=$RDS_HOST
+            DB_NAME=$RDS_DB_NAME
+            DB_USER=$RDS_USER
+            DB_PASSWORD=$RDS_PASSWORD
             DB_PORT=3306
 
-            DOCKERHUB_IMAGE=${{ env.DOCKERHUB_IMAGE }}
-            IMAGE_TAG=${{ env.IMAGE_TAG }}
+            DOCKERHUB_IMAGE=$DOCKERHUB_IMAGE
+            IMAGE_TAG=$IMAGE_TAG
             EOF
 
             # -------- /.env.prod (환경변수 파일) --------
