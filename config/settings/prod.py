@@ -8,7 +8,7 @@ env = environ.Env()
 DEBUG = True # temp #  개발 끝나면 False로 변경 예정
 
 # .env 파일 로드
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env.prod"))
 
 # .env 파일에서 도메인 목록을 읽어옴
 ALLOWED_HOSTS = [h.strip() for h in env("DJANGO_ALLOWED_HOSTS").split(",")]
@@ -16,9 +16,9 @@ ALLOWED_HOSTS = [h.strip() for h in env("DJANGO_ALLOWED_HOSTS").split(",")]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ["MYSQL_DATABASE"],
-        "USER": os.environ["MYSQL_USER"],
-        "PASSWORD": os.environ["MYSQL_PASSWORD"],
+        "NAME": os.environ["DB_NAME"],
+        "USER": os.environ["DB_USER"],
+        "PASSWORD": os.environ["DB_PASSWORD"],
         "HOST": os.environ["DB_HOST"],
         "PORT": os.getenv("DB_PORT", "3306"),
         "OPTIONS": {"charset": "utf8mb4"},
