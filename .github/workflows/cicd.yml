@@ -353,7 +353,7 @@ jobs:
               set -Eeuo pipefail
               echo '[deploy:apply-socialapp] (2/3) Django Site 도메인 업데이트...';
               python manage.py shell --settings=config.settings.prod -c \
-              'import os; from django.contrib.sites.models import Site; d=os.environ.get("SITE_DOMAIN"); s,_=Site.objects.get_or_create(id=1); s.domain=d; s.name=d; s.save(); print(s.id, s.domain)'
+              'from django.contrib.sites.models import Site; s,_=Site.objects.get_or_create(id=1); s.domain=\"subway-info-easy.site\"; s.name=\"subway-info-easy.site\"; s.save(); print(s.id, s.domain)'
 
               echo '[deploy:apply-socialapp] (2/3) Google SocialApp 적용 시작...';
               python manage.py apply_socialapp --settings=config.settings.prod;
