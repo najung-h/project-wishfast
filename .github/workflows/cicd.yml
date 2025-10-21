@@ -281,18 +281,6 @@ jobs:
                 image: "${DOCKERHUB_IMAGE}:${IMAGE_TAG}"
                 container_name: wishfast_web
                 restart: always
-                environment:
-                  SECRET_KEY: $DJANGO_SECRET_KEY
-                  DJANGO_DEBUG: $DJANGO_DEBUG
-                  DB_HOST: $DB_HOST
-                  DB_PORT: "3306"
-                  MYSQL_DATABASE: $MYSQL_DATABASE
-                  MYSQL_USER: $MYSQL_USER
-                  MYSQL_PASSWORD: $MYSQL_PASSWORD
-                  DJANGO_SETTINGS_MODULE: config.settings.prod
-                  GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
-                  GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
-                  SITE_DOMAIN: $SITE_DOMAIN
                 volumes:
                   - ./staticfiles:/wishfast/staticfiles
                   - ./logs:/wishfast/logs
