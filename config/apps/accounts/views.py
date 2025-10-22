@@ -32,7 +32,9 @@ def profile_view(request):
         # 폼 데이터가 유효하면(cleaned_data에 접근 가능)
         if form.is_valid():
             # 입력받은 기본역(default_station)을 프로필에 반영
-            prof.default_station = form.cleaned_data["default_station"]
+            prof.preferred_station_1 = form.cleaned_data["preferred_station_1"]
+            prof.preferred_station_2 = form.cleaned_data["preferred_station_2"]
+            prof.preferred_station_3 = form.cleaned_data["preferred_station_3"]
 
             # DB에 저장
             prof.save()
@@ -44,7 +46,11 @@ def profile_view(request):
     # GET 요청(즉, 페이지 첫 방문 또는 리다이렉트 후 재접속)일 때
     else:
         # 기존 기본역을 폼의 초기값으로 세팅
-        form = ProfileForm(initial={"default_station": prof.default_station})
+        form = ProfileForm(initial={
+            "preferred_station_1": prof.preferred_station_1,
+            "preferred_station_2": prof.preferred_station_2,
+            "preferred_station_3": prof.preferred_station_3,
+        })
 
     # arrivals/base.html 템플릿을 렌더링
     # 'content_for_profile': True는 base.html 안에서 프로필 전용 블록을 표시하기 위한 플래그로 사용됨

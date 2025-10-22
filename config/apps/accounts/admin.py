@@ -15,4 +15,4 @@ class ProfileAdmin(admin.ModelAdmin):
     # 관리자(admin) 목록 페이지에서 표시할 컬럼들을 지정합니다.
     # 튜플 형태로 필드명을 나열하면 각 레코드가 테이블 형태로 표시됩니다.
     # 여기서는 user(사용자), default_station(기본역)이 한 줄에 표시됩니다.
-    list_display = ("user", "default_station")
+    list_display = ("user", "preferred_station_1", "preferred_station_2", "preferred_station_3")

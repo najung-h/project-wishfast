@@ -23,7 +23,9 @@ class Profile(models.Model):
     사용자의 자주 이용하는 지하철역(default_station)을 저장합니다.
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    default_station = models.CharField(max_length=50, blank=True)
+    preferred_station_1 = models.CharField(max_length=50, blank=True, null=True)
+    preferred_station_2 = models.CharField(max_length=50, blank=True, null=True)
+    preferred_station_3 = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} profile"
+        return f"{self.user.username}'s profile"
