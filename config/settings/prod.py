@@ -66,8 +66,8 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") # 프록시 환경
 
 # 신뢰된 오리진 목록 
 CSRF_TRUSTED_ORIGINS = [
-    "https://subway-info-easy.site",
-    "https://www.subway-info-easy.site",   # www 쓰면 함께
+    "https://runornot.site",
+    "https://www.runornot.site",   # www 쓰면 함께
 ]
 
 # 세션/CSRF 쿠키를 HTTPS 연결에서만 전송 

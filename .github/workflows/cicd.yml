@@ -238,16 +238,16 @@ jobs:
             cat > nginx/conf.d/default.conf << 'EOF'
             server {
               listen 80;
-              server_name subway-info-easy.site;
+              server_name runornot.site;
               return 301 https://$host$request_uri;
             }
 
             server {
               listen 443 ssl http2;
-              server_name subway-info-easy.site;
+              server_name runornot.site;
  
-              ssl_certificate /etc/letsencrypt/live/subway-info-easy.site/fullchain.pem;
-              ssl_certificate_key /etc/letsencrypt/live/subway-info-easy.site/privkey.pem;
+              ssl_certificate /etc/letsencrypt/live/runornot.site/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/runornot.site/privkey.pem;
 
               ssl_session_timeout 1d;
               ssl_session_cache shared:MozSSL:10m;
@@ -343,7 +343,7 @@ jobs:
               set -Eeuo pipefail
               echo '[deploy:apply-socialapp] (2/3) Django Site 도메인 업데이트...';
               python manage.py shell --settings=config.settings.prod -c \
-              'from django.contrib.sites.models import Site; s,_=Site.objects.get_or_create(id=1); s.domain=\"subway-info-easy.site\"; s.name=\"subway-info-easy.site\"; s.save(); print(s.id, s.domain)'
+              'from django.contrib.sites.models import Site; s,_=Site.objects.get_or_create(id=1); s.domain=\"runornot.site\"; s.name=\"runornot.site\"; s.save(); print(s.id, s.domain)'
 
               echo '[deploy:apply-socialapp] (2/3) Google SocialApp 적용 시작...';
               python manage.py apply_socialapp --settings=config.settings.prod;
